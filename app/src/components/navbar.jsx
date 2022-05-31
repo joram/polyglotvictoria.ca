@@ -24,7 +24,7 @@ function Navbar(){
     let topRight = <Dropdown item text={<GithubProfile/>}>
       <Dropdown.Menu>
         <Dropdown.Item as={Link} to={"/topic/propose"}>Propose Topic</Dropdown.Item>
-        <Dropdown.Item>Logout</Dropdown.Item>
+        <Dropdown.Item as={Link} to={"/logout"}>Logout</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
 
@@ -32,8 +32,6 @@ function Navbar(){
     if(profile===undefined){
         topRight = <LoginButton/>
     }
-    console.log(profile)
-
 
     function handleItemClick(e, { name }){
         setPage(name)

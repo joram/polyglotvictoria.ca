@@ -9,7 +9,7 @@ async def verify_session_key(session_token: str = Header(default=None)) -> User:
     session = get_session()
 
     # get session token
-    session_token_qs = session.query(SessionToken).filter(SessionToken.uid == session_token)
+    session_token_qs = session.query(SessionToken).filter(SessionToken.token == session_token)
     if session_token_qs.count() != 1:
         raise HTTPException(status_code=403, detail="Invalid Session Key")
     session_token = session_token_qs.first()

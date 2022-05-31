@@ -24,18 +24,27 @@ def session_token_uid():
     return f"session_{uuid.uuid4()}"
 
 
+def user_uid():
+    return f"user_{uuid.uuid4()}"
+
+
+def topic_uid():
+    return f"topic_{uuid.uuid4()}"
+
+
 class ShortLivedSecret(Base):
     __tablename__ = "short_lived_secrets"
 
-    id = Column(Integer, primary_key=True)
-    uid = Column(String, default=short_lived_secret_uid)
+    id = Column(String, primary_key=True)
+    secret = Column(String, default=short_lived_secret_uid)
     created_at = Column(DateTime, default=datetime.datetime.now)
+    expires_at = Column(DateTime, default=datetime.datetime.now)
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     name = Column(String)
     login = Column(String)
     avatar_url = Column(String)
@@ -46,19 +55,37 @@ class User(Base):
 class SessionToken(Base):
     __tablename__ = "session_tokens"
 
-    id = Column(Integer, primary_key=True)
-    uid = Column(String, default=session_token_uid)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    id = Column(String, primary_key=True)
+    token = Column(String, default=session_token_uid)
+    user_id = Column(String, ForeignKey('users.id'))
     created_at = Column(DateTime, default=datetime.datetime.now)
-    expires_at = Column(DateTime)
+
+    github_code = Column(String)
+    github_access_token = Column(String)
+    secret = Column(String, ForeignKey('short_lived_secrets.secret'))
+
+
+class TopicType(enum.Enum):
+    SCHEDULED = "scheduled"
+    PROPOSED = "proposed"
+    COMPLETED = "completed"
+
+
+class TopicStructure(enum.Enum):
+    TALK = "talk"
+    ROUND_TABLE = "round table"
+    PANEL = "panel"
+    FISH_BOWL = "fish bowl"
 
 
 class Topic(Base):
     __tablename__ = "topics"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    title = Column(String)
-    description = Column(String)
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey('users.id'))
+    title = Column(String(256))
+    description = Column(String(1024))
+    topic_type = Column(Enum(TopicType), default=TopicType.PROPOSED)
+    topic_structure = Column(Enum(TopicStructure), default=TopicStructure.ROUND_TABLE)
     created_at = Column(DateTime, default=datetime.datetime.now)
     scheduled_datetime = datetime.datetime
 

@@ -2,7 +2,13 @@ import React from "react";
 import GithubButton from 'react-github-login-button'
 
 async function githubLoginURL() {
-    return fetch("https://polyglot.oram.ca/auth/github_url").then(response => response.text()).then(response => response.replace(/['"]+/g, ''))
+    let isLocal = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "")
+    let url = "https://polyglot.oram.ca/auth/github_url"
+    if(isLocal){
+        url = "http://localhost:8000/auth/github_url"
+    }
+
+    return fetch(url).then(response => response.text()).then(response => response.replace(/['"]+/g, ''))
 }
 
 function LoginButton() {
