@@ -1,7 +1,8 @@
+import React from "react";
 import GithubButton from 'react-github-login-button'
 
 async function githubLoginURL() {
-    return fetch("http://127.0.0.1:8000/auth/github_url").then(response => response.text()).then(response => response.replace(/['"]+/g, ''))
+    return fetch("https://polyglot.oram.ca/auth/github_url").then(response => response.text()).then(response => response.replace(/['"]+/g, ''))
 }
 
 function LoginButton() {
