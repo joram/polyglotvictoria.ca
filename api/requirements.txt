@@ -1,3 +1,5 @@
+pydantic
+alembic
 requests
 fastapi
 uvicorn[standard]

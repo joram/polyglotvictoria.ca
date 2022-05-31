@@ -32,6 +32,7 @@ function Navbar(){
     if(profile===undefined){
         topRight = <LoginButton/>
     }
+    console.log(profile)
 
 
     function handleItemClick(e, { name }){

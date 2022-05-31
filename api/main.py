@@ -1,12 +1,14 @@
+import datetime
 import urllib.parse
-import uuid
-from typing import Optional, Tuple
+from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from models import Topic, get_session, User
+from utils.auth import verify_session_key
+from utils.github import get_github_user_details
 from utils.secrets import secrets
-from utils.github import get_github_user_details, get_github_access_token
 from utils.session_tokens import get_session_token, create_session_token, delete_session_token
 from utils.short_lived_secrets import get_short_lived_secret, verify_short_lived_secret
 
@@ -58,3 +60,24 @@ async def auth(code:str, state:str) -> dict:
 @app.delete("/auth/session_token")
 async def auth(session_token:str):
     delete_session_token(session_token)
+
+
+@app.get("/topics")
+async def list_topic(session_token:str) -> List[Topic]:
+    return get_session().query(Topic)
+
+
+@app.post("/topic/create")
+async def create_topic(title:str, description: str, user: User = Depends(verify_session_key),):
+
+    topic = Topic(
+        title=title,
+        description=description,
+        user_id=user.id,
+    )
+
+    session = get_session()
+    session.add(topic)
+    session.commit()
+
+    return topic

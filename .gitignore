@@ -2,3 +2,5 @@
 *.pyc
 .idea
 *.env*
+/api/database.sqlite
+/api/data/database.sqlite
