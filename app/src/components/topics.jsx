@@ -1,72 +1,73 @@
 import React from "react";
-import {Button, Card, Container, Form, Header, Icon, TextArea} from "semantic-ui-react";
+import {Card, Container, Header, Icon} from "semantic-ui-react";
+import Navbar from "./navbar";
 
 let completedTopics = [{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 }]
 
 let scheduledTopics = [{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes_in_person": 22,
     "votes_virtual": 11,
     "datetime": "2022, March 3rd, 7pm",
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 }]
 
 
 let proposedTopics = [{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },{
-    "title": "how to become a senior",
-    "description": "All things related to bringing a developer to a senior level. either yourself or those you are mentoring or leading.",
+    "title": "how to become a developer",
+    "description": "All things related to bringing a developer to a developer level. either yourself or those you are mentoring or leading.",
     "votes": 22,
 },]
 
@@ -149,7 +150,10 @@ function CompletedTopics(){
 
 function Topics(){
     return <>
+        <Navbar/>
         <Container>
+            this is dummy data atm. TODO: add functionality <br/>
+
             <Header>Scheduled</Header>
             <ScheduledTopics/>
         </Container>

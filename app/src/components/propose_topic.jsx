@@ -1,9 +1,11 @@
 import React from "react";
 import {Button, Container, Form, Header, TextArea} from "semantic-ui-react";
+import Navbar from "./navbar";
 
 function ProposeTopic(){
-    return      <Container>
-
+    return      <>
+        <Navbar/>
+        <Container>
  <Form>
      <Header>Propose a Topic</Header>
         <Form.Field>
@@ -33,6 +35,7 @@ function ProposeTopic(){
         <Button type='submit'>Submit</Button>
   </Form>
     </Container>
+        </>
 }
 
 export default ProposeTopic
