@@ -15,9 +15,7 @@ function LoginButton() {
 
     function onClick() {
         githubLoginURL().then(href => {
-            console.log("got ", href)
             window.location.replace(href)
-
         })
     }
 

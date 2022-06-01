@@ -1,6 +1,7 @@
-import {useNavigate, useSearchParams} from "react-router-dom";
 import React from "react";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import Cookies from "universal-cookie";
+
 const cookies = new Cookies();
 
 function _get_github_profile_and_session_token(code, state){

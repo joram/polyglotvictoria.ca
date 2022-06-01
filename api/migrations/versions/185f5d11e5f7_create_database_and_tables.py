@@ -1,8 +1,8 @@
 """create database and tables
 
-Revision ID: 8931087a2095
+Revision ID: 185f5d11e5f7
 Revises: 
-Create Date: 2022-05-31 11:33:58.942107
+Create Date: 2022-05-31 14:15:55.918706
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8931087a2095'
+revision = '185f5d11e5f7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -59,8 +59,8 @@ def upgrade():
     )
     op.create_table('votes',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('topic_id', sa.Integer(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('topic_id', sa.String(), nullable=True),
+    sa.Column('user_id', sa.String(), nullable=True),
     sa.Column('vote_type', sa.Enum('IN_PERSON', 'REMOTE', name='votetype'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['topic_id'], ['topics.id'], ),

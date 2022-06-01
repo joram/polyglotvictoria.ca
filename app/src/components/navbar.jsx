@@ -1,8 +1,11 @@
 import React, {useState} from "react";
-import {Dropdown, Image, Menu} from "semantic-ui-react";
+import {Container, Dropdown, Header, Image, Menu, Segment} from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import Cookies from "universal-cookie";
 import LoginButton from "./login_button";
+import { SemanticToastContainer } from 'react-semantic-toasts';
+import {BrowserView, MobileView} from 'react-device-detect';
+import 'react-semantic-toasts/styles/react-semantic-alert.css';
 
 const cookies = new Cookies();
 
@@ -16,7 +19,6 @@ function GithubProfile(){
         <span>{profile.name}</span>
     </>
 }
-
 
 function Navbar(){
     let currentPage = window.location.pathname
@@ -37,7 +39,39 @@ function Navbar(){
         setPage(name)
         window.history.push("/"+page)
     }
-      return <Menu inverted>
+      return <>
+        <MobileView>
+            <Segment inverted>
+                <Header textAlign="center" style={{paddingTop:"10px"}}>Polyglot Victoria Meetup</Header>
+          <Menu inverted>
+            <Menu.Item
+              name='about'
+              active={page === 'about'}
+              onClick={handleItemClick}
+              as={Link}
+              to={"/about"}
+            >
+              About
+            </Menu.Item>
+
+            <Menu.Item
+              name='topics'
+              active={page === 'topics'}
+              onClick={handleItemClick}
+              as={Link}
+              to={"/topics"}
+            >
+              Topics
+            </Menu.Item>
+                        <Menu.Menu position='right'>
+            {topRight}
+          </Menu.Menu>
+
+          </Menu>
+            </Segment>
+        </MobileView>
+        <BrowserView>
+          <Menu inverted>
 
         <Menu.Item
           name='Polyglot Meetup'
@@ -74,6 +108,9 @@ function Navbar(){
           </Menu.Menu>
 
       </Menu>
+    </BrowserView>
+        <SemanticToastContainer />;
+      </>
       }
 
   export default Navbar

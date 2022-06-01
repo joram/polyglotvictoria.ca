@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Button, Container, Form, Header, TextArea} from "semantic-ui-react";
 import Navbar from "./navbar";
 import Cookies from "universal-cookie";
-import LoginButton from "./login_button";
+import {toast} from "react-semantic-toasts";
 
 const cookies = new Cookies();
 
@@ -35,10 +35,26 @@ function ProposeTopic(){
         }
         return fetch(url, {method:"POST", body:JSON.stringify(data), headers:headers}).then(
             response => response.text()
-        ).then(response => response.replace(/['"]+/g, ''))
+        ).then(response => {
+            window.location.replace("/topics")
+        })
     }
 
-    return      <>
+    let profile = cookies.get("github_profile")
+    if(profile===undefined){
+         setTimeout(() => {toast({
+            title: 'Info',
+            description: <p>To propose a topic you must be signed in</p>
+        })}, 500)
+         return <>
+            <Navbar/>
+                <Container style={{fontSize: "22px"}}>
+            <p>You must be logged in with github account to propose topics.</p>
+                </Container>
+        </>
+    }
+
+    return <>
         <Navbar/>
         <Container>
  <Form>

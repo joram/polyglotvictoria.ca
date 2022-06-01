@@ -93,13 +93,14 @@ class Topic(Base):
 class VoteType(enum.Enum):
     IN_PERSON = "in_person"
     REMOTE = "remote"
+    NONE = "none"
 
 
 class Vote(Base):
     __tablename__ = "votes"
 
     id = Column(Integer, primary_key=True)
-    topic_id = Column(Integer, ForeignKey('topics.id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+    topic_id = Column(String, ForeignKey('topics.id'))
+    user_id = Column(String, ForeignKey('users.id'))
     vote_type = Column(Enum(VoteType))
     created_at = Column(DateTime, default=datetime.datetime.now)

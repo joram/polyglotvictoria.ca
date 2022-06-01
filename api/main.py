@@ -2,14 +2,14 @@ import datetime
 import enum
 import json
 import urllib.parse
-from typing import List
+from typing import List, Optional, Tuple
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from models import Topic, get_session, User, SessionToken, user_uid, session_token_uid, short_lived_secret_uid, \
-    ShortLivedSecret, topic_uid, TopicType, TopicStructure
+    ShortLivedSecret, topic_uid, TopicType, TopicStructure, Vote, VoteType
 from utils.auth import verify_session_key
 from utils.github import get_github_user_details, get_github_access_token
 from utils.secrets import secrets
@@ -92,33 +92,105 @@ async def auth(code: str, state: str) -> dict:
 
 
 class TopicResponse(BaseModel):
+    id: str
     title: str
     description: str
     votes_in_person: int
     votes_remote: int
     type: TopicType
     structure: TopicStructure
+    voted_in_person: bool = False
+    voted_remote: bool = False
 
 
 @app.get("/topics")
-async def list_topic() -> List[TopicResponse]:
-    qs = get_session().query(Topic)
-    topics = [
-        TopicResponse(
+async def list_topics(session_token: Optional[str] = Header(default=None)) -> List[TopicResponse]:
+    def get_votes(topic_id:str) -> Tuple[int, int]:
+        session = get_session()
+        remote_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.REMOTE)
+        in_person_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.IN_PERSON)
+        return remote_qs.count(), in_person_qs.count()
+
+    session = get_session()
+    qs = session.query(Topic)
+    if session_token in [None, "undefined"]:
+        topics = []
+        for topic in qs:
+            votes_remote, votes_in_person = get_votes(topic.id)
+            topics.append(TopicResponse(
+                id=topic.id,
+                title=topic.title,
+                description=topic.description,
+                votes_in_person=votes_in_person,
+                votes_remote=votes_remote,
+                type=topic.topic_type,
+                structure=topic.topic_structure,
+            ))
+        return topics
+
+    session_token = session.query(SessionToken).filter(SessionToken.token == session_token).first()
+    user,_ = session.query(User, User.id==session_token.user_id).first()
+    topics = []
+    for topic in qs:
+        voted_in_person = session.query(Vote).filter(
+            Vote.user_id == user.id,
+            Vote.topic_id == topic.id,
+            Vote.vote_type == VoteType.IN_PERSON,
+        ).count() >= 1
+        voted_remote = session.query(Vote).filter(
+            Vote.user_id == user.id,
+            Vote.topic_id == topic.id,
+            Vote.vote_type == VoteType.REMOTE,
+        ).count() >= 1
+        votes_remote, votes_in_person = get_votes(topic.id)
+        topics.append(TopicResponse(
+            id=topic.id,
             title=topic.title,
             description=topic.description,
-            votes_in_person=0,
-            votes_remote=0,
+            votes_in_person=votes_in_person,
+            votes_remote=votes_remote,
             type=topic.topic_type,
             structure=topic.topic_structure,
-        ) for topic in qs
-    ]
+            voted_in_person=voted_in_person,
+            voted_remote=voted_remote,
+        ))
     return topics
+
+
+class TopicVoteRequest(BaseModel):
+    type: VoteType
+
+
+@app.post("/topic/{topic_id}/vote")
+async def vote_for_topic(topic_id: str, data:TopicVoteRequest, user: User = Depends(verify_session_key),):
+    session = get_session()
+
+    # Remove all existing queries
+    session.query(Vote).filter(
+        Vote.topic_id == topic_id,
+        Vote.user_id == user.id,
+    ).delete()
+    session.commit()
+
+    if data.type == VoteType.NONE:
+        return
+
+    # New voted
+    vote = Vote(
+        vote_type=data.type,
+        user_id=user.id,
+        topic_id=topic_id
+    )
+    session = get_session()
+    session.add(vote)
+    session.commit()
+
 
 class TopicCreateRequest(BaseModel):
     title: str
     description: str
     structure: TopicStructure
+
 
 @app.post("/topic")
 async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_session_key),):
