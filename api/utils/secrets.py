@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     GITHUB_SCOPE: str = "read:user"
     GITHUB_REDIRECT_URI: str
     DATABASE_URI: str = 'sqlite:///data/database.sqlite'
+    SLACK_WEBHOOK_URL: str
 
 
 secrets = Settings()

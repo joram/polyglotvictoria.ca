@@ -3,6 +3,7 @@ import enum
 import json
 import urllib.parse
 from typing import List, Optional, Tuple
+import slack_sdk
 
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,10 +11,11 @@ from pydantic import BaseModel
 
 from models import Topic, get_session, User, SessionToken, user_uid, session_token_uid, short_lived_secret_uid, \
     ShortLivedSecret, topic_uid, TopicType, TopicStructure, Vote, VoteType
-from utils.auth import verify_session_key
+from utils.auth import verify_session_key, verify_admin_session_key
 from utils.github import get_github_user_details, get_github_access_token
 from utils.secrets import secrets
 from utils.short_lived_secrets import get_short_lived_secret, verify_short_lived_secret
+from utils.slack import send_message
 
 app = FastAPI()
 
@@ -185,6 +187,9 @@ async def vote_for_topic(topic_id: str, data:TopicVoteRequest, user: User = Depe
     session.add(vote)
     session.commit()
 
+    topic = session.query(Topic).filter(Topic.id==topic_id).first()
+    send_message(f"`{user.name}` voted for a topic `{topic.title}`")
+
 
 class TopicCreateRequest(BaseModel):
     title: str
@@ -208,4 +213,61 @@ async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_sess
     session.add(topic)
     session.commit()
 
+    send_message(f"`{user.name}` created a topic `{topic.title}`")
     return topic
+
+
+class UserResponse(BaseModel):
+    name: str
+    avatar_url: str
+    email: str
+    id: str
+    login: str
+
+
+class AdminTopicGetResponse(BaseModel):
+    title: str
+    description: str
+    structure: TopicStructure
+    user: UserResponse
+    voted: List[UserResponse]
+
+
+@app.get("/topic/{topic_id}")
+async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_session_key)) -> AdminTopicGetResponse:
+    session = get_session()
+    topic = session.query(Topic).filter(Topic.id == topic_id).first()
+
+    def get_user_response(user_id):
+        user = get_session().query(User).filter(User.id == user_id).first()
+
+        return UserResponse(
+            name=user.name,
+            avatar_url=user.avatar_url,
+            email=user.email or "",
+            id=user.id,
+            login=user.login or "",
+        )
+
+    votes_qs = session.query(Vote).filter(Vote.topic_id == topic_id)
+
+    return AdminTopicGetResponse(
+        title=topic.title,
+        description=topic.description,
+        structure=topic.topic_structure,
+        user=get_user_response(topic.user_id),
+        voted=[get_user_response(vote.user_id) for vote in votes_qs]
+    )
+
+
+@app.post("/topic/{topic_id}")
+async def admin_topic_edit(topic_id: str, data: TopicCreateRequest, user: User = Depends(verify_admin_session_key),):
+    session = get_session()
+    topic = session.query(Topic).filter(Topic.id == topic_id).first()
+
+    topic.title = data.title
+    topic.description = data.description
+    topic.topic_structure = data.structure
+
+    session.add(topic)
+    session.commit()

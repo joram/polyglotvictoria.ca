@@ -3,3 +3,4 @@ alembic
 requests
 fastapi
 uvicorn[standard]
+slack-sdk

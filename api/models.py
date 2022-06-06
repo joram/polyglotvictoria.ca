@@ -1,5 +1,6 @@
 import datetime
 import enum
+import json
 import uuid
 
 from sqlalchemy import create_engine, Column, Integer, ForeignKey, String, DateTime, Enum
@@ -51,6 +52,10 @@ class User(Base):
     data = Column(String)
     created_at = Column(DateTime, default=datetime.datetime.now)
 
+    @property
+    def email(self):
+        data = json.loads(self.data)
+        return data["email"]
 
 class SessionToken(Base):
     __tablename__ = "session_tokens"

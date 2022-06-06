@@ -7,7 +7,7 @@ const HomepageHeading = ({ mobile }) => (
   <Container text>
     <Header
       as='h1'
-      content='Victoria Polyglot Meetup'
+      content='Victoria Developer Polyglot Meetup'
 
       style={{
         fontSize: mobile ? '2em' : '4em',

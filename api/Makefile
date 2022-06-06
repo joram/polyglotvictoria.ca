@@ -9,3 +9,14 @@ run:
 
 push:
 	docker push joram87/polyglot-api
+
+pull_on_server:
+	ssh 192.168.1.222 "cd projects/nas; docker-compose pull polyglot"
+
+update_on_server:
+	ssh 192.168.1.222 "cd projects/nas; docker-compose up -d polyglot"
+
+tail_logs_on_server:
+	ssh 192.168.1.222 "cd projects/nas; docker-compose logs -f polyglot"
+
+deploy: build push pull_on_server update_on_server tail_logs_on_server

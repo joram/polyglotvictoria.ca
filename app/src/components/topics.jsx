@@ -7,6 +7,7 @@ import {BrowserView, MobileView} from 'react-device-detect';
 import {toast} from "react-semantic-toasts";
 
 const cookies = new Cookies();
+let profile = cookies.get("github_profile")
 
 function promptLogin(){
     toast({
@@ -32,7 +33,6 @@ function TopicVoting(props){
     }
 
     function onClickRemote(){
-        let profile = cookies.get("github_profile")
         if(profile===undefined){
             promptLogin()
             return null
@@ -96,11 +96,18 @@ function TopicVoting(props){
         )
     }
 
+    let edit = null
+    if(profile !== undefined && profile.login === "joram"){
+        edit = <Link style={{marginLeft:"10px"}} to={"/topic/"+props.topic.id+"/edit"}>
+            <Icon name='edit'/>
+        </Link>
+    }
     return <>
         <Icon style={{marginLeft:"10px"}} name='computer' color={remote_color} onClick={onClickRemote}/>
         <span style={{paddingRight:"10px"}}>{votes_remote} </span>
         <Icon name='user' color={in_person_color} onClick={onClickInPerson}/>
         {votes_in_person}
+        {edit}
     </>
 }
 
@@ -184,9 +191,11 @@ function Topics(){
                     These are topics proposed by the community.
                     If you are interested in one, mark yourself as interested.
                     <br/>
+                    <br/>
                     <Icon name='computer' /> indicates remote
                     <br/>
                     <Icon name='user'/> indicates in person
+                    <br/>
                     <br/>
                     We'll email you when the topic is scheduled.
                 </div>
@@ -204,7 +213,7 @@ function Topics(){
             <Grid.Column textAlign="center">
                             <Header>
                 <div style={{fontFamily: "Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;"}}>
-                    Not seeing a topic you are interested in? Why not propose one?
+                    Not seeing a topic you are interested in?
                 </div>
             </Header>
               <Button as={Link} to={"/topic/propose"}>Propose a Topic</Button>

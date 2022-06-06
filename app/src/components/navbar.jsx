@@ -42,7 +42,7 @@ function Navbar(){
       return <>
         <MobileView>
             <Segment inverted>
-                <Header textAlign="center" style={{paddingTop:"10px"}}>Polyglot Victoria Meetup</Header>
+                <Header textAlign="center" style={{paddingTop:"10px"}}>Polyglot Meetup</Header>
           <Menu inverted>
             <Menu.Item
               name='about'

@@ -9,6 +9,8 @@ import About from "./components/about";
 import Home from "./components/home";
 import Authenticate from "./components/authenticate";
 import Logout from "./components/logout";
+import AdminTopics from "./components/admin_topics_list";
+import EditTopic from "./components/admin_topic_edit";
 
 function App() {
   return <div>
@@ -16,6 +18,8 @@ function App() {
           <Routes>
               <Route path="/authenticate" element={<Authenticate/>}/>
               <Route path="/topic/propose" element={<ProposeTopic/>} />
+              <Route path="/topic/:topic_id/edit" element={<EditTopic/>} />
+              <Route path="/topics/admin" element={<AdminTopics/>} />
               <Route path="/topics" element={<Topics/>} />
               <Route path="/about" element={<About/>} />
               <Route path="/logout" element={<Logout/>} />

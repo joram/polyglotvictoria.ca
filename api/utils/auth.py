@@ -6,6 +6,10 @@ from models import get_session, SessionToken, User
 
 
 async def verify_session_key(session_token: str = Header(default=None)) -> User:  # noqa: B008
+    return get_user(session_token)
+
+
+def get_user(session_token: str) -> User:
     session = get_session()
 
     # get session token
@@ -20,3 +24,11 @@ async def verify_session_key(session_token: str = Header(default=None)) -> User:
         raise HTTPException(status_code=403, detail="Missing User")
 
     return user_qs.first()
+
+
+async def verify_admin_session_key(session_token: str = Header(default=None)) -> User:  # noqa: B008
+    user = get_user(session_token)
+    if user.login not in ["joram"]:
+        raise HTTPException(status_code=403, detail="Invalid Session Key")
+    return user
+
