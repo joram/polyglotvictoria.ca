@@ -8,7 +8,7 @@ function About(){
         <Navbar/>
         <Container style={{fontSize: "22px"}}>
             <p>
-                The Polyglot Meetup is a hybrid in-person/remote meetup open to anyone in the Victoria Tech community,
+                The Polyglot Victoria Conference is a hybrid in-person/remote conference open to anyone in the Victoria Tech community,
                 where the <Link to="/topics">topics</Link> are driven by the participants.
             </p>
 
@@ -26,8 +26,8 @@ function About(){
 
             <Header as="h3">Topics take place</Header>
             <p>
-                The highest voted topics are scheduled, and coordinated in a local tech
-                office. We'll stream the conversation over zoom for those who wish to be
+                The highest voted topics are scheduled and coordinated.
+                We'll stream the conversation over zoom for those who wish to be
                 remote.
             </p>
 
@@ -35,7 +35,7 @@ function About(){
             <Header as="h2">Covid Protocols</Header>
             <p>
                 We'll require (and verify) in-person attendees are double vaccinated, and ask
-                that everyone stay masked during the meetups. There will be limited
+                that everyone stay masked during the conference. There will be limited
                 capacity. There will be a moderator on the zoom call, to surface questions
                 and discussion to the speaker/panel/group.
             </p>

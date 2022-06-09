@@ -1,11 +1,10 @@
-import datetime
-import enum
 import json
+import json
+import pprint
 import urllib.parse
 from typing import List, Optional, Tuple
-import slack_sdk
 
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -14,7 +13,6 @@ from models import Topic, get_session, User, SessionToken, user_uid, session_tok
 from utils.auth import verify_session_key, verify_admin_session_key
 from utils.github import get_github_user_details, get_github_access_token
 from utils.secrets import secrets
-from utils.short_lived_secrets import get_short_lived_secret, verify_short_lived_secret
 from utils.slack import send_message
 
 app = FastAPI()
@@ -63,6 +61,7 @@ async def auth(code: str, state: str) -> dict:
         #     return {"error": "INVALID_STATE", "message": "short lived secret does not exist in server, please refresh."}
         github_access_token = get_github_access_token(code)
         github_profile = get_github_user_details(github_access_token)
+        pprint.pprint(github_profile)
         user_qs = session.query(User).filter(User.login==github_profile["login"])
         if user_qs.count() > 0:
             user = user_qs.first()

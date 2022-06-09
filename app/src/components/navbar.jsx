@@ -1,9 +1,9 @@
 import React, {useState} from "react";
-import {Container, Dropdown, Header, Image, Menu, Segment} from "semantic-ui-react";
+import {Dropdown, Header, Image, Menu, Segment} from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import Cookies from "universal-cookie";
 import LoginButton from "./login_button";
-import { SemanticToastContainer } from 'react-semantic-toasts';
+import {SemanticToastContainer} from 'react-semantic-toasts';
 import {BrowserView, MobileView} from 'react-device-detect';
 import 'react-semantic-toasts/styles/react-semantic-alert.css';
 
@@ -42,7 +42,7 @@ function Navbar(){
       return <>
         <MobileView>
             <Segment inverted>
-                <Header textAlign="center" style={{paddingTop:"10px"}}>Polyglot Meetup</Header>
+                <Header textAlign="center" style={{paddingTop:"10px"}}>Polyglot Victoria</Header>
           <Menu inverted>
             <Menu.Item
               name='about'
@@ -74,13 +74,13 @@ function Navbar(){
           <Menu inverted>
 
         <Menu.Item
-          name='Polyglot Meetup'
+          name='Polyglot Victoria Conference'
           active={page === 'home'}
           onClick={handleItemClick}
           as={Link}
           to={"/"}
         >
-          Polyglot Victoria Meetup
+          Polyglot Victoria Conference
         </Menu.Item>
 
         <Menu.Item

@@ -1,6 +1,6 @@
-# Polyglot Meetup
+# Polyglot Victoria
 
-This is the code to run the website www.polyglotmeetup.ca.
+This is the code to run the website www.polyglotvictoria.ca.
 
 It's a monorepo microservice architecture.
 I.e. there is two services (api and app) in one git repository.
