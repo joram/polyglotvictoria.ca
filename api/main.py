@@ -12,6 +12,7 @@ from models import Topic, get_session, User, SessionToken, user_uid, session_tok
     ShortLivedSecret, topic_uid, TopicType, TopicStructure, Vote, VoteType
 from utils.auth import verify_session_key, verify_admin_session_key
 from utils.github import get_github_user_details, get_github_access_token
+from utils.s3 import save_to_s3, POLYGLOT_VICTORIA_BUCKET_NAME
 from utils.secrets import secrets
 from utils.slack import send_message
 
@@ -71,6 +72,7 @@ async def auth(code: str, state: str) -> dict:
                 name=github_profile["name"],
                 login=github_profile["login"],
                 avatar_url=github_profile["avatar_url"],
+                email=github_profile["email"],
                 data=json.dumps(github_profile)
             )
             session.add(user)
@@ -104,31 +106,38 @@ class TopicResponse(BaseModel):
     voted_remote: bool = False
 
 
+def _get_votes(topic_id:str) -> Tuple[int, int]:
+    session = get_session()
+    remote_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.REMOTE)
+    in_person_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.IN_PERSON)
+    return remote_qs.count(), in_person_qs.count()
+
+
+def _get_topics():
+    session = get_session()
+    qs = session.query(Topic)
+    topics = []
+    for topic in qs:
+        votes_remote, votes_in_person = _get_votes(topic.id)
+        topics.append(TopicResponse(
+            id=topic.id,
+            title=topic.title,
+            description=topic.description,
+            votes_in_person=votes_in_person,
+            votes_remote=votes_remote,
+            type=topic.topic_type,
+            structure=topic.topic_structure,
+        ))
+    return topics
+
+
 @app.get("/topics")
 async def list_topics(session_token: Optional[str] = Header(default=None)) -> List[TopicResponse]:
-    def get_votes(topic_id:str) -> Tuple[int, int]:
-        session = get_session()
-        remote_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.REMOTE)
-        in_person_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.IN_PERSON)
-        return remote_qs.count(), in_person_qs.count()
+    if session_token in [None, "undefined"]:
+        return _get_topics()
 
     session = get_session()
     qs = session.query(Topic)
-    if session_token in [None, "undefined"]:
-        topics = []
-        for topic in qs:
-            votes_remote, votes_in_person = get_votes(topic.id)
-            topics.append(TopicResponse(
-                id=topic.id,
-                title=topic.title,
-                description=topic.description,
-                votes_in_person=votes_in_person,
-                votes_remote=votes_remote,
-                type=topic.topic_type,
-                structure=topic.topic_structure,
-            ))
-        return topics
-
     session_token = session.query(SessionToken).filter(SessionToken.token == session_token).first()
     user,_ = session.query(User, User.id==session_token.user_id).first()
     topics = []
@@ -143,7 +152,7 @@ async def list_topics(session_token: Optional[str] = Header(default=None)) -> Li
             Vote.topic_id == topic.id,
             Vote.vote_type == VoteType.REMOTE,
         ).count() >= 1
-        votes_remote, votes_in_person = get_votes(topic.id)
+        votes_remote, votes_in_person = _get_votes(topic.id)
         topics.append(TopicResponse(
             id=topic.id,
             title=topic.title,
@@ -189,6 +198,12 @@ async def vote_for_topic(topic_id: str, data:TopicVoteRequest, user: User = Depe
     topic = session.query(Topic).filter(Topic.id==topic_id).first()
     send_message(f"`{user.name}` voted for a topic `{topic.title}`")
 
+    save_to_s3(
+        bucket_name=POLYGLOT_VICTORIA_BUCKET_NAME,
+        bucket_key="cache/topics.json",
+        json_data={"topics": [t.json() for t in _get_topics()]},
+    )
+
 
 class TopicCreateRequest(BaseModel):
     title: str
@@ -213,6 +228,13 @@ async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_sess
     session.commit()
 
     send_message(f"`{user.name}` created a topic `{topic.title}`")
+
+    save_to_s3(
+        bucket_name=POLYGLOT_VICTORIA_BUCKET_NAME,
+        bucket_key="cache/topics.json",
+        json_data={"topics": [t.json() for t in _get_topics()]},
+    )
+
     return topic
 
 
@@ -232,6 +254,24 @@ class AdminTopicGetResponse(BaseModel):
     voted: List[UserResponse]
 
 
+@app.delete("/topic/{topic_id}")
+async def delete_topic(topic_id: str, user: User = Depends(verify_admin_session_key)):
+    session = get_session()
+    topic = session.query(Topic).filter(Topic.id == topic_id).first()
+    session.delete(topic)
+    session.commit()
+
+    def dictt(topic):
+        data = json.loads(topic.json())
+        return data
+
+    save_to_s3(
+        bucket_name=POLYGLOT_VICTORIA_BUCKET_NAME,
+        bucket_key="cache/topics.json",
+        json_data={"topics": [dictt(t) for t in _get_topics()]},
+    )
+
+
 @app.get("/topic/{topic_id}")
 async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_session_key)) -> AdminTopicGetResponse:
     session = get_session()
@@ -243,7 +283,7 @@ async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_sessi
         return UserResponse(
             name=user.name,
             avatar_url=user.avatar_url,
-            email=user.email or "",
+            email=user.get_email or "",
             id=user.id,
             login=user.login or "",
         )
@@ -270,3 +310,9 @@ async def admin_topic_edit(topic_id: str, data: TopicCreateRequest, user: User =
 
     session.add(topic)
     session.commit()
+
+    save_to_s3(
+        bucket_name=POLYGLOT_VICTORIA_BUCKET_NAME,
+        bucket_key="cache/topics.json",
+        json_data={"topics": [t.dict() for t in _get_topics()]},
+    )

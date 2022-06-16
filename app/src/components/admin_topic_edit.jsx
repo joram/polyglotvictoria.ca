@@ -91,6 +91,26 @@ function EditTopic(){
         })
     }
 
+    function onClickDelete(){
+        let isLocal = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "")
+        let url = "https://polyglot.oram.ca/topic/"+topic_id
+        if(isLocal){
+            url = "http://localhost:8000/topic/"+topic_id
+        }
+
+        let sessionToken = cookies.get("session_token")
+        let headers = {
+            "session-token": sessionToken,
+            "Accept": "application/json",
+            'Content-Type': 'application/json',
+        }
+        return fetch(url, {method:"DELETE", headers:headers}).then(
+            response => response.text()
+        ).then(response => {
+            window.location.replace("/topics")
+        })
+    }
+
     if(!gettingTopic){
         setGettingTopic(true)
         getTopic()
@@ -141,6 +161,7 @@ function EditTopic(){
             </Button.Group>
         </Form.Field>
         <Button type='submit' onClick={submitForm}>Submit</Button>
+        <Button type='submit' onClick={onClickDelete}>Delete</Button>
 
         <h2>Favourited</h2>
         <VoteTable voted={voted} />

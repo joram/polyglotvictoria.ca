@@ -163,14 +163,7 @@ function Topics(){
             url = "http://localhost:8000/topics"
         }
 
-        let sessionToken = cookies.get("session_token")
-        let headers = {
-            "session-token": sessionToken,
-            "Accept": "application/json",
-        }
-        fetch(url, {method: "GET", headers: headers}).then(
-            response => response.json()
-        ).then(topics => {
+        function processJsonResponse(topics){
             console.log(topics)
             proposedTopics = []
             topics.forEach(topic => {
@@ -179,6 +172,28 @@ function Topics(){
                 }
             })
             setproposedTopics(proposedTopics)
+        }
+
+        let sessionToken = cookies.get("session_token")
+        let headers = {
+            "session-token": sessionToken,
+            "Accept": "application/json",
+        }
+        fetch(url, {method: "GET", headers: headers, timeout: 1}).then(
+            response => response.json()
+        ).then(topics => processJsonResponse(topics)).catch(error =>{
+            console.log("failed to talk to API server, using cache")
+            let cache_url = "https://www.polyglotvictoria.ca/cache/topics.json"
+            fetch(cache_url, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => response.json()).then(data => {
+                let topics = []
+                data.topics.forEach(t => topics.push(JSON.parse(t)))
+                processJsonResponse(topics)
+            })
         })
     }
 

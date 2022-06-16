@@ -74,13 +74,13 @@ function Navbar(){
           <Menu inverted>
 
         <Menu.Item
-          name='Polyglot Victoria Conference'
+          name='Polyglot Victoria Unconference'
           active={page === 'home'}
           onClick={handleItemClick}
           as={Link}
           to={"/"}
         >
-          Polyglot Victoria Conference
+          Polyglot Victoria Unconference
         </Menu.Item>
 
         <Menu.Item

@@ -3,7 +3,7 @@ import enum
 import json
 import uuid
 
-from sqlalchemy import create_engine, Column, Integer, ForeignKey, String, DateTime, Enum
+from sqlalchemy import create_engine, Column, Integer, ForeignKey, String, DateTime, Enum, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
@@ -50,12 +50,16 @@ class User(Base):
     login = Column(String)
     avatar_url = Column(String)
     data = Column(String)
+    email = Column(String)
+    contact_me_general = Column(Boolean)
+    contact_me_topic_chosen = Column(Boolean)
     created_at = Column(DateTime, default=datetime.datetime.now)
 
     @property
-    def email(self):
+    def get_email(self):
         data = json.loads(self.data)
         return data["email"]
+
 
 class SessionToken(Base):
     __tablename__ = "session_tokens"
@@ -70,13 +74,14 @@ class SessionToken(Base):
     secret = Column(String, ForeignKey('short_lived_secrets.secret'))
 
 
-class TopicType(enum.Enum):
-    SCHEDULED = "scheduled"
+class TopicType(str, enum.Enum):
     PROPOSED = "proposed"
+    SCHEDULED = "scheduled"
     COMPLETED = "completed"
+    HIDDEN = "hidden"
 
 
-class TopicStructure(enum.Enum):
+class TopicStructure(str, enum.Enum):
     TALK = "talk"
     ROUND_TABLE = "round table"
     PANEL = "panel"

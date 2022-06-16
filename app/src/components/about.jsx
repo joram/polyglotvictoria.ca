@@ -1,5 +1,5 @@
 import React from "react";
-import {Container, Header} from "semantic-ui-react";
+import {Container, Header, List} from "semantic-ui-react";
 import Navbar from "./navbar";
 import {Link} from "react-router-dom";
 
@@ -8,7 +8,7 @@ function About(){
         <Navbar/>
         <Container style={{fontSize: "22px"}}>
             <p>
-                The Polyglot Victoria Conference is a hybrid in-person/remote conference open to anyone in the Victoria Tech community,
+                The Polyglot Victoria Unconference is a hybrid in-person/remote <a href="/definitions#unconference">unconference</a> open to anyone in the Victoria Tech community,
                 where the <Link to="/topics">topics</Link> are driven by the participants.
             </p>
 
@@ -19,9 +19,21 @@ function About(){
             </p>
             <Header as="h3">Topics are voted on</Header>
             <p>
-                A topic can be facilitated in one of many formats: a standard talk by a single
-                person, an open discussion, a predefined panel, a fishbowl (adhoc/hotseat
-                panel)
+                A topic can be facilitated in one of many formats:
+                <List>
+                    <List.Item>
+                        <a href="/definitions#talk">Talk</a>
+                    </List.Item>
+                    <List.Item>
+                        <a href="/definitions#round_table">Round Table</a>
+                    </List.Item>
+                    <List.Item>
+                        <a href="/definitions#panel">Panel</a>
+                    </List.Item>
+                    <List.Item>
+                        <a href="/definitions#fishbowl">Fishbowl</a>
+                    </List.Item>
+                </List>
             </p>
 
             <Header as="h3">Topics take place</Header>
@@ -35,7 +47,7 @@ function About(){
             <Header as="h2">Covid Protocols</Header>
             <p>
                 We'll require (and verify) in-person attendees are double vaccinated, and ask
-                that everyone stay masked during the conference. There will be limited
+                that everyone stay masked during the unconference. There will be limited
                 capacity. There will be a moderator on the zoom call, to surface questions
                 and discussion to the speaker/panel/group.
             </p>

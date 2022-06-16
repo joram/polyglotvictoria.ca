@@ -7,7 +7,7 @@ const HomepageHeading = ({ mobile }) => (
   <Container text>
     <Header
       as='h1'
-      content='Polyglot Victoria Conference'
+      content='Polyglot Victoria Unconference'
 
       style={{
         fontSize: mobile ? '2em' : '4em',
@@ -18,7 +18,7 @@ const HomepageHeading = ({ mobile }) => (
     />
     <Header
       as='h2'
-      content='A developer/tech focused in-person/remote-hybrid conference'
+      content='A developer/tech focused in-person/remote-hybrid unconference'
       style={{
         fontSize: mobile ? '1.5em' : '1.7em',
         fontWeight: 'normal',
@@ -77,7 +77,7 @@ function Home(){
     return <>
         <Navbar/>
         <HomepageHeading/>
-        <TimeAndPlace/>
+        {/*<TimeAndPlace/>*/}
         <GetInvolvedHeading/>
     </>
 }
