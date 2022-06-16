@@ -6,10 +6,24 @@ from typing import List, Optional, Tuple
 
 from fastapi import FastAPI, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from models import Topic, get_session, User, SessionToken, user_uid, session_token_uid, short_lived_secret_uid, \
-    ShortLivedSecret, topic_uid, TopicType, TopicStructure, Vote, VoteType
+from models import (
+    Topic,
+    get_session,
+    User,
+    SessionToken,
+    user_uid,
+    session_token_uid,
+    short_lived_secret_uid,
+    ShortLivedSecret,
+    topic_uid,
+    TopicType,
+    TopicStructure,
+    Vote,
+    VoteType,
+)
 from utils.auth import verify_session_key, verify_admin_session_key
 from utils.github import get_github_user_details, get_github_access_token
 from utils.s3 import save_to_s3, POLYGLOT_VICTORIA_BUCKET_NAME
@@ -44,26 +58,29 @@ async def auth_github_url():
         "allow_signup": True,
     }
     querystring = urllib.parse.urlencode(data)
-    return "https://github.com/login/oauth/authorize?"+querystring
+    return "https://github.com/login/oauth/authorize?" + querystring
 
 
 @app.get("/auth/session_token")
 async def auth(code: str, state: str) -> dict:
     session = get_session()
+    github_profile = {}
 
     session_token = None
-    qs = session.query(SessionToken).filter(SessionToken.github_code == code, SessionToken.secret == state)
+    qs = session.query(SessionToken).filter(
+        SessionToken.github_code == code, SessionToken.secret == state
+    )
     if qs.count() == 1:
         session_token = qs.first()
         github_profile = get_github_user_details(session_token.github_access_token)
+
 
     if session_token is None:
         # if not verify_short_lived_secret(state):
         #     return {"error": "INVALID_STATE", "message": "short lived secret does not exist in server, please refresh."}
         github_access_token = get_github_access_token(code)
         github_profile = get_github_user_details(github_access_token)
-        pprint.pprint(github_profile)
-        user_qs = session.query(User).filter(User.login==github_profile["login"])
+        user_qs = session.query(User).filter(User.login == github_profile["login"])
         if user_qs.count() > 0:
             user = user_qs.first()
         else:
@@ -73,7 +90,7 @@ async def auth(code: str, state: str) -> dict:
                 login=github_profile["login"],
                 avatar_url=github_profile["avatar_url"],
                 email=github_profile["email"],
-                data=json.dumps(github_profile)
+                data=json.dumps(github_profile),
             )
             session.add(user)
 
@@ -106,10 +123,14 @@ class TopicResponse(BaseModel):
     voted_remote: bool = False
 
 
-def _get_votes(topic_id:str) -> Tuple[int, int]:
+def _get_votes(topic_id: str) -> Tuple[int, int]:
     session = get_session()
-    remote_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.REMOTE)
-    in_person_qs = session.query(Vote).filter(Vote.topic_id==topic_id, Vote.vote_type==VoteType.IN_PERSON)
+    remote_qs = session.query(Vote).filter(
+        Vote.topic_id == topic_id, Vote.vote_type == VoteType.REMOTE
+    )
+    in_person_qs = session.query(Vote).filter(
+        Vote.topic_id == topic_id, Vote.vote_type == VoteType.IN_PERSON
+    )
     return remote_qs.count(), in_person_qs.count()
 
 
@@ -119,51 +140,69 @@ def _get_topics():
     topics = []
     for topic in qs:
         votes_remote, votes_in_person = _get_votes(topic.id)
-        topics.append(TopicResponse(
-            id=topic.id,
-            title=topic.title,
-            description=topic.description,
-            votes_in_person=votes_in_person,
-            votes_remote=votes_remote,
-            type=topic.topic_type,
-            structure=topic.topic_structure,
-        ))
+        topics.append(
+            TopicResponse(
+                id=topic.id,
+                title=topic.title,
+                description=topic.description,
+                votes_in_person=votes_in_person,
+                votes_remote=votes_remote,
+                type=topic.topic_type,
+                structure=topic.topic_structure,
+            )
+        )
     return topics
 
 
 @app.get("/topics")
-async def list_topics(session_token: Optional[str] = Header(default=None)) -> List[TopicResponse]:
+async def list_topics(
+    session_token: Optional[str] = Header(default=None),
+) -> List[TopicResponse]:
     if session_token in [None, "undefined"]:
         return _get_topics()
 
     session = get_session()
     qs = session.query(Topic)
-    session_token = session.query(SessionToken).filter(SessionToken.token == session_token).first()
-    user,_ = session.query(User, User.id==session_token.user_id).first()
+    session_token = (
+        session.query(SessionToken).filter(SessionToken.token == session_token).first()
+    )
+    user, _ = session.query(User, User.id == session_token.user_id).first()
     topics = []
     for topic in qs:
-        voted_in_person = session.query(Vote).filter(
-            Vote.user_id == user.id,
-            Vote.topic_id == topic.id,
-            Vote.vote_type == VoteType.IN_PERSON,
-        ).count() >= 1
-        voted_remote = session.query(Vote).filter(
-            Vote.user_id == user.id,
-            Vote.topic_id == topic.id,
-            Vote.vote_type == VoteType.REMOTE,
-        ).count() >= 1
+        voted_in_person = (
+            session.query(Vote)
+            .filter(
+                Vote.user_id == user.id,
+                Vote.topic_id == topic.id,
+                Vote.vote_type == VoteType.IN_PERSON,
+            )
+            .count()
+            >= 1
+        )
+        voted_remote = (
+            session.query(Vote)
+            .filter(
+                Vote.user_id == user.id,
+                Vote.topic_id == topic.id,
+                Vote.vote_type == VoteType.REMOTE,
+            )
+            .count()
+            >= 1
+        )
         votes_remote, votes_in_person = _get_votes(topic.id)
-        topics.append(TopicResponse(
-            id=topic.id,
-            title=topic.title,
-            description=topic.description,
-            votes_in_person=votes_in_person,
-            votes_remote=votes_remote,
-            type=topic.topic_type,
-            structure=topic.topic_structure,
-            voted_in_person=voted_in_person,
-            voted_remote=voted_remote,
-        ))
+        topics.append(
+            TopicResponse(
+                id=topic.id,
+                title=topic.title,
+                description=topic.description,
+                votes_in_person=votes_in_person,
+                votes_remote=votes_remote,
+                type=topic.topic_type,
+                structure=topic.topic_structure,
+                voted_in_person=voted_in_person,
+                voted_remote=voted_remote,
+            )
+        )
     return topics
 
 
@@ -172,8 +211,12 @@ class TopicVoteRequest(BaseModel):
 
 
 @app.post("/topic/{topic_id}/vote")
-async def vote_for_topic(topic_id: str, data:TopicVoteRequest, user: User = Depends(verify_session_key),):
-    session = get_session()
+async def vote_for_topic(
+    topic_id: str,
+    data: TopicVoteRequest,
+    user_session=Depends(verify_session_key),
+):
+    user, session = user_session
 
     # Remove all existing queries
     session.query(Vote).filter(
@@ -186,16 +229,12 @@ async def vote_for_topic(topic_id: str, data:TopicVoteRequest, user: User = Depe
         return
 
     # New voted
-    vote = Vote(
-        vote_type=data.type,
-        user_id=user.id,
-        topic_id=topic_id
-    )
+    vote = Vote(vote_type=data.type, user_id=user.id, topic_id=topic_id)
     session = get_session()
     session.add(vote)
     session.commit()
 
-    topic = session.query(Topic).filter(Topic.id==topic_id).first()
+    topic = session.query(Topic).filter(Topic.id == topic_id).first()
     send_message(f"`{user.name}` voted for a topic `{topic.title}`")
 
     save_to_s3(
@@ -212,7 +251,11 @@ class TopicCreateRequest(BaseModel):
 
 
 @app.post("/topic")
-async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_session_key),):
+async def create_topic(
+    data: TopicCreateRequest,
+    user_session=Depends(verify_session_key),
+):
+    user, session = user_session
 
     topic = Topic(
         id=topic_uid(),
@@ -223,7 +266,6 @@ async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_sess
         topic_structure=data.structure,
     )
 
-    session = get_session()
     session.add(topic)
     session.commit()
 
@@ -241,9 +283,47 @@ async def create_topic(data:TopicCreateRequest, user: User = Depends(verify_sess
 class UserResponse(BaseModel):
     name: str
     avatar_url: str
-    email: str
+    email: Optional[str]
     id: str
     login: str
+    contact_me_general: Optional[bool] = True
+    contact_me_topic_chosen: Optional[bool] = True
+
+    @classmethod
+    def from_model(cls, user: User) -> "UserResponse":
+        return UserResponse(
+            id=user.id,
+            name=user.name,
+            login=user.login,
+            email=user.email,
+            avatar_url=user.avatar_url,
+            contact_me_general=user.contact_me_general,
+            contact_me_topic_chosen=user.contact_me_topic_chosen,
+        )
+
+
+@app.get("/user")
+async def delete_topic(
+    user_session=Depends(verify_session_key),
+) -> UserResponse:
+    (user, session) = user_session
+    return UserResponse.from_model(user)
+
+
+@app.post("/user")
+async def delete_topic(
+    data: UserResponse,
+    user_session=Depends(verify_session_key),
+) -> UserResponse:
+    (user, session) = user_session
+    user.email = data.email
+    user.contact_me_general = data.contact_me_general
+    user.contact_me_topic_chosen = data.contact_me_topic_chosen
+
+    session.add(user)
+    session.commit()
+
+    return UserResponse.from_model(user)
 
 
 class AdminTopicGetResponse(BaseModel):
@@ -255,7 +335,7 @@ class AdminTopicGetResponse(BaseModel):
 
 
 @app.delete("/topic/{topic_id}")
-async def delete_topic(topic_id: str, user: User = Depends(verify_admin_session_key)):
+async def delete_topic(topic_id: str, _ = Depends(verify_admin_session_key)):
     session = get_session()
     topic = session.query(Topic).filter(Topic.id == topic_id).first()
     session.delete(topic)
@@ -273,7 +353,10 @@ async def delete_topic(topic_id: str, user: User = Depends(verify_admin_session_
 
 
 @app.get("/topic/{topic_id}")
-async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_session_key)) -> AdminTopicGetResponse:
+async def admin_topic_get(
+    topic_id: str, _ = Depends(verify_admin_session_key)
+) -> AdminTopicGetResponse:
+
     session = get_session()
     topic = session.query(Topic).filter(Topic.id == topic_id).first()
 
@@ -283,9 +366,11 @@ async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_sessi
         return UserResponse(
             name=user.name,
             avatar_url=user.avatar_url,
-            email=user.get_email or "",
+            email=user.email,
             id=user.id,
             login=user.login or "",
+            contact_me_general=user.contact_me_general,
+            contact_me_topic_chosen=user.contact_me_topic_chosen,
         )
 
     votes_qs = session.query(Vote).filter(Vote.topic_id == topic_id)
@@ -295,13 +380,17 @@ async def admin_topic_get(topic_id: str, user: User = Depends(verify_admin_sessi
         description=topic.description,
         structure=topic.topic_structure,
         user=get_user_response(topic.user_id),
-        voted=[get_user_response(vote.user_id) for vote in votes_qs]
+        voted=[get_user_response(vote.user_id) for vote in votes_qs],
     )
 
 
 @app.post("/topic/{topic_id}")
-async def admin_topic_edit(topic_id: str, data: TopicCreateRequest, user: User = Depends(verify_admin_session_key),):
-    session = get_session()
+async def admin_topic_edit(
+    topic_id: str,
+    data: TopicCreateRequest,
+    user_sesion = Depends(verify_admin_session_key),
+):
+    user, session = user_sesion
     topic = session.query(Topic).filter(Topic.id == topic_id).first()
 
     topic.title = data.title
