@@ -1,5 +1,5 @@
 import React from "react";
-import {Container, Header, List} from "semantic-ui-react";
+import {Container, Header, Image, List} from "semantic-ui-react";
 import Navbar from "./navbar";
 import {Link} from "react-router-dom";
 
@@ -7,6 +7,12 @@ function About(){
     return <>
         <Navbar/>
         <Container style={{fontSize: "22px"}}>
+            <Image floated="right" src="/PV_LOGO.svg" size="medium" />
+
+            <br/>
+            <br/>
+            <br/>
+            <Header as="h2">Polyglot Victoria</Header>
             <p>
                 The Polyglot Victoria Unconference is a hybrid in-person/remote <a href="/definitions#unconference">unconference</a> open to anyone in the Victoria Tech community,
                 where the <Link to="/topics">topics</Link> are driven by the participants.

@@ -22,7 +22,7 @@ from models import (
     TopicType,
     TopicStructure,
     Vote,
-    VoteType,
+    VoteType, NotificationRequest,
 )
 from utils.auth import verify_session_key, verify_admin_session_key
 from utils.github import get_github_user_details, get_github_access_token
@@ -405,3 +405,25 @@ async def admin_topic_edit(
         bucket_key="cache/topics.json",
         json_data={"topics": [t.dict() for t in _get_topics()]},
     )
+
+
+class NotifyRegistrationRequest(BaseModel):
+    email: str
+
+
+@app.post("/notify_registration")
+async def notify_registration(
+    data: NotifyRegistrationRequest
+):
+    session = get_session()
+    session.add(NotificationRequest(
+        email=data.email,
+    ))
+    session.commit()
+
+@app.get("/notify_registrations")
+async def notify_registrations(
+    user_sesion = Depends(verify_admin_session_key),
+) -> List[str]:
+    qs = get_session().query(NotificationRequest)
+    return [nr.email for nr in qs]

@@ -114,3 +114,11 @@ class Vote(Base):
     user_id = Column(String, ForeignKey('users.id'))
     vote_type = Column(Enum(VoteType))
     created_at = Column(DateTime, default=datetime.datetime.now)
+
+
+class NotificationRequest(Base):
+    __tablename__ = "notification_requests"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.now)

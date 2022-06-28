@@ -13,6 +13,8 @@ import AdminTopics from "./components/admin_topics_list";
 import EditTopic from "./components/admin_topic_edit";
 import Definitions from "./components/definitions";
 import Settings from "./components/settings";
+import Registration from "./components/registration";
+import AdminNotifyRegistrations from "./components/admin_notify_list";
 
 function App() {
   return <div>
@@ -27,6 +29,8 @@ function App() {
               <Route path="/definitions" element={<Definitions/>} />
               <Route path="/logout" element={<Logout/>} />
               <Route path="/settings" element={<Settings/>} />
+              <Route path="/registration" element={<Registration/>} />
+              <Route path="/registration/list" element={<AdminNotifyRegistrations/>} />
               {/*<Route path="/topic/:topicId" element={<Topic/>} />*/}
               <Route path="/" element={<Home/>} />
           </Routes>

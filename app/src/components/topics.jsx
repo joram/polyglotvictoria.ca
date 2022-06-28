@@ -186,6 +186,7 @@ function Topics(){
             let cache_url = "https://www.polyglotvictoria.ca/cache/topics.json"
             fetch(cache_url, {
                 method: "GET",
+                mode: "no-cors",
                 headers: {
                     'Content-Type': 'application/json',
                 }
