@@ -32,7 +32,7 @@ let definition_data = [{
 }]
 
 function getActiveSlug(){
-    let _, parts = window.location.href.split("#",  2)
+    let parts = window.location.href.split("#",  2)
     if(parts.length !== 2){
         return ""
     }

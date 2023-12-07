@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"; // eslint-disable-line no-unused-vars
 import {useNavigate, useSearchParams} from "react-router-dom";
 import Cookies from "universal-cookie";
 
