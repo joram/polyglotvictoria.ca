@@ -18,41 +18,13 @@ function promptLogin(){
 
 function TopicVoting(props){
     let [voted_in_person, set_voted_in_person] = useState(props.topic.voted_in_person)
-    let [voted_remote, set_voted_remote] = useState(props.topic.voted_remote)
     let [votes_in_person, set_votes_in_person] = useState(props.topic.votes_in_person)
-    let [votes_remote, set_votes_remote] = useState(props.topic.votes_remote)
-    console.log(props.topic)
-    let remote_color = "grey"
-    if(voted_remote){
-        remote_color = "pink"
-    }
 
     let in_person_color = "grey"
     if(voted_in_person){
         in_person_color = "pink"
     }
 
-    function onClickRemote(){
-        if(profile===undefined){
-            promptLogin()
-            return null
-        }
-
-        if(voted_remote){
-            vote(props.topic.id, "none")
-            set_voted_in_person(false)
-            set_voted_remote(false)
-            set_votes_remote(votes_remote-1)
-        } else {
-            vote(props.topic.id, "remote")
-            set_voted_in_person(false)
-            set_voted_remote(true)
-            set_votes_remote(votes_remote+1)
-            if(voted_in_person){
-                set_votes_in_person(votes_in_person-1)
-            }
-        }
-    }
     function onClickInPerson(){
         let profile = cookies.get("github_profile")
         if(profile===undefined){
@@ -63,16 +35,11 @@ function TopicVoting(props){
         if(voted_in_person){
             vote(props.topic.id, "none")
             set_voted_in_person(false)
-            set_voted_remote(false)
             set_votes_in_person(votes_in_person-1)
         } else {
             vote(props.topic.id, "in_person")
             set_voted_in_person(true)
-            set_voted_remote(false)
             set_votes_in_person(votes_in_person+1)
-            if(voted_remote){
-                set_votes_remote(votes_remote-1)
-            }
         }
     }
     function vote(id, type){
@@ -103,8 +70,6 @@ function TopicVoting(props){
         </Link>
     }
     return <>
-        <Icon style={{marginLeft:"10px"}} name='computer' color={remote_color} onClick={onClickRemote}/>
-        <span style={{paddingRight:"10px"}}>{votes_remote} </span>
         <Icon name='user' color={in_person_color} onClick={onClickInPerson}/>
         {votes_in_person}
         {edit}
@@ -208,12 +173,8 @@ function Topics(){
                     If you are interested in one, mark yourself as interested.
                     <br/>
                     <br/>
-                    <Icon name='computer' /> indicates remote
-                    <br/>
                     <Icon name='user'/> indicates in person
                     <br/>
-                    <br/>
-                    We'll email you when the topic is scheduled.
                 </div>
             </Header>
         </Container>
